@@ -50,7 +50,7 @@ Este projeto simula o sistema de gestão de exames da empresa fictícia ST Diagn
 ## Padrões de Projeto 
 
 1. Factory Method: 
-Permite a criação flexível de exames e laudos. As novas classes de exames ou formatos podem ser adicionadas sem impactar o código cliente.
+Aplicado na geração de laudos em diferentes formatos (texto, HTML, PDF). Cada formato possui sua classe específica, e uma fábrica decide qual instância criar com base no tipo de saída desejado. Permite adicionar novos formatos de forma flexível, sem impactar o código principal.
 
 2. Strategy: 
 Aplica diferentes estratégias de validação para cada tipo de exame. O laudo delega essa responsabilidade ao validador específico, promovendo o princípio Open/Closed.
