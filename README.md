@@ -44,6 +44,10 @@ Este projeto simula o sistema de gestão de exames da empresa fictícia ST Diagn
 
 ---
 
+## Diagrama de Classes:
+![Diagrama de Classes](docs/diagrama.svg)
+---
+
 ## Equipe:
 - Gabriel Manassés
 - Geraldo Neto
