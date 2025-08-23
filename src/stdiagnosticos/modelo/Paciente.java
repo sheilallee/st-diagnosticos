@@ -13,7 +13,6 @@ public class Paciente {
     private final String email;
     private final boolean possuiConvenio;
 
-
     public Paciente(long id, String nomeCompleto, LocalDate nascimento, String fone, String email, boolean possuiConvenio) {
         this.id = id;
         this.nomeCompleto = nomeCompleto;
