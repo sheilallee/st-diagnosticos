@@ -25,8 +25,10 @@ public class ExamePrioritario implements Comparable<ExamePrioritario> {
 
 
     @Override public int compareTo(ExamePrioritario o) {
+        // compara primeiro pela prioridade (urgência)
         int c = Integer.compare(this.prioridade.getOrdem(), o.prioridade.getOrdem());
         if (c != 0) return c;
+        // se a prioridade for igual, mantém ordem de chegada (FIFO)
         return Long.compare(this.ordemChegada, o.ordemChegada);
     }
 }
