@@ -43,9 +43,9 @@ public class Main {
         // Priority Queue
         FilaExames fila = new FilaExames();
 
-        Paciente p1 = pacientes.get(0);
-        Paciente p2 = pacientes.get(1);
-        Paciente p3 = pacientes.get(2);
+        Paciente p1 = pacientes.get(0); // Alberto (convênio=true)
+        Paciente p2 = pacientes.get(1); // Beatriz (idosa, convênio=false)
+        Paciente p3 = pacientes.get(2); // Caio (convênio=true)
 
         Medico mHemato = medicos.get(0);
         Medico mRadio  = medicos.get(1);
@@ -93,7 +93,7 @@ public class Main {
         System.out.printf("Exame %s solicitado para %s — Preço final R$ %.2f — Prioridade %s%n%n",
                 eu1.getTipo(), p3.getNomeCompleto(), valorFinal3, Prioridade.POUCO_URGENTE);
 
-        // Processamento
+        // Processamento (PriorityQueue + validação + bridge + observer)
         GerenciadorNotificacao notif = new GerenciadorNotificacao();
         notif.adicionar(new EmailNotificador());
         notif.adicionar(new SmsNotificador());
@@ -113,21 +113,24 @@ public class Main {
                 continue;
             }
 
-            // Bridge
-            FormatoLaudo formato = switch (ex.getTipo()) {
-                case "HEMOGRAMA" -> new FormatoPDF();
-                case "RESSONANCIA" -> new FormatoHTML();
-                default -> new FormatoTexto();
-            };
+                        // Bridge
+            FormatoLaudo formato = new FormatoHTML();
             String laudo = formato.gerar(ex);
-            System.out.println(laudo);
+
+            // Salva o laudo em arquivo HTML
+            String nomeArquivo = String.format("laudo_%d.html", ex.getNumeroExame());
+            Path caminhoLaudo = Paths.get("laudos").resolve(nomeArquivo);
+            Files.createDirectories(caminhoLaudo.getParent());
+            Files.writeString(caminhoLaudo, laudo);
+            System.out.println("Laudo HTML salvo em: " + caminhoLaudo.toAbsolutePath());
+
 
             // Observer
             notif.notificarTodos("Laudo emitido para " + ex.getPaciente().getNomeCompleto(), ex.getPaciente());
             System.out.println();
         }
 
-        // Demonstração falha validação
+        // Demonstração falha validação 
         Paciente pFalha = pacientes.get(4);
         ExameClinico hemFalha = fabHemograma.criar(pFalha, mHemato);
         if (hemFalha instanceof HemogramaEx h) {
@@ -139,6 +142,73 @@ public class Main {
         ResultadoChecagem rFalha = cadFalha.validar(hemFalha);
         System.out.println("Demonstração de validação (deve falhar): " + rFalha);
 
+        // ================================
+        // TESTES DE DESCONTO
+        // ================================
+        Medico medicoQualquer = mHemato; // só para criar os exames de teste
+
+        // (1) Sem desconto — procura alguém < 60 e sem convênio
+        Paciente semDesconto = pacientes.stream()
+            .filter(p -> p.getIdade() < 60 && !p.isPossuiConvenio())
+            .findFirst().orElse(null);
+
+        if (semDesconto != null) {
+            ExameClinico ex = fabHemograma.criar(semDesconto, medicoQualquer);
+            GestorDePreco gp = new GestorDePreco();
+            gp.definirPolitica(valor -> valor); // nenhuma política
+            double preco = gp.calcularPreco(ex.getPrecoBase());
+            System.out.printf("[TESTE] SEM DESCONTO -> %s | Idade:%d | Convênio:%b | Base: R$ %.2f | Final: R$ %.2f%n",
+                    semDesconto.getNomeCompleto(), semDesconto.getIdade(), semDesconto.isPossuiConvenio(),
+                    ex.getPrecoBase(), preco);
+        }
+
+        // (2) Desconto de IDOSO — >= 60 e sem convênio
+        Paciente soIdoso = pacientes.stream()
+            .filter(p -> p.getIdade() >= 60 && !p.isPossuiConvenio())
+            .findFirst().orElse(null);
+
+        if (soIdoso != null) {
+            ExameClinico ex = fabHemograma.criar(soIdoso, medicoQualquer);
+            GestorDePreco gp = new GestorDePreco();
+            gp.definirPolitica(new DescontoParaIdoso(0.08));
+            double preco = gp.calcularPreco(ex.getPrecoBase());
+            System.out.printf("[TESTE] IDOSO -> %s | Idade:%d | Convênio:%b | Base: R$ %.2f | Final: R$ %.2f%n",
+                    soIdoso.getNomeCompleto(), soIdoso.getIdade(), soIdoso.isPossuiConvenio(),
+                    ex.getPrecoBase(), preco);
+        }
+
+        // (3) Desconto de CONVÊNIO — convênio=true e < 60
+        Paciente soConvenio = pacientes.stream()
+            .filter(p -> p.isPossuiConvenio() && p.getIdade() < 60)
+            .findFirst().orElse(null);
+
+        if (soConvenio != null) {
+            ExameClinico ex = fabHemograma.criar(soConvenio, medicoQualquer);
+            GestorDePreco gp = new GestorDePreco();
+            gp.definirPolitica(new DescontoPorConvenio(0.15));
+            double preco = gp.calcularPreco(ex.getPrecoBase());
+            System.out.printf("[TESTE] CONVÊNIO -> %s | Idade:%d | Convênio:%b | Base: R$ %.2f | Final: R$ %.2f%n",
+                    soConvenio.getNomeCompleto(), soConvenio.getIdade(), soConvenio.isPossuiConvenio(),
+                    ex.getPrecoBase(), preco);
+        }
+
+        // (4) Desconto COMBINADO (idoso + convênio) — precisa da classe PoliticaDescontoComposta
+        Paciente idosoConvenio = pacientes.stream()
+            .filter(p -> p.getIdade() >= 60 && p.isPossuiConvenio())
+            .findFirst().orElse(null);
+
+        if (idosoConvenio != null) {
+            ExameClinico ex = fabHemograma.criar(idosoConvenio, medicoQualquer);
+            GestorDePreco gp = new GestorDePreco();
+            gp.definirPolitica(new PoliticaDescontoComposta(
+                    List.of(new DescontoPorConvenio(0.15), new DescontoParaIdoso(0.08))
+            ));
+            double preco = gp.calcularPreco(ex.getPrecoBase());
+            System.out.printf("[TESTE] CONVÊNIO + IDOSO -> %s | Idade:%d | Convênio:%b | Base: R$ %.2f | Final: R$ %.2f%n",
+                    idosoConvenio.getNomeCompleto(), idosoConvenio.getIdade(), idosoConvenio.isPossuiConvenio(),
+                    ex.getPrecoBase(), preco);
+        }
+
         System.out.println("\n=== Fim da execução de demonstração ===");
     }
 
@@ -148,3 +218,5 @@ public class Main {
         return valor -> valor; // nenhum desconto
     }
 }
+
+
