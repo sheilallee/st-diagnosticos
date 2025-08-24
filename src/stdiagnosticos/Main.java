@@ -43,21 +43,22 @@ public class Main {
         CriadorExame fabHemograma = new CriadorHemograma(72.00);
         CriadorExame fabUltrassom  = new CriadorUltrassonografia(140.00);
         CriadorExame fabResson     = new CriadorRessonancia(780.00);
+        
+        
+         // Priority Queue
+         FilaExames fila = new FilaExames();
+         
+         Paciente p1 = pacientes.get(0); // Alberto (convênio=true)
+         Paciente p2 = pacientes.get(1); // Beatriz (idosa, convênio=false)
+         Paciente p3 = pacientes.get(2); // Caio (convênio=true)
 
-        // Priority Queue
-        FilaExames fila = new FilaExames();
-
-        Paciente p1 = pacientes.get(0); // Alberto (convênio=true)
-        Paciente p2 = pacientes.get(1); // Beatriz (idosa, convênio=false)
-        Paciente p3 = pacientes.get(2); // Caio (convênio=true)
-
-        Medico mHemato = medicos.get(0);
-        Medico mRadio  = medicos.get(1);
-        Medico mUltra  = medicos.get(3);
-
-        // Hemograma p1
-        ExameClinico eh1 = fabHemograma.criar(p1, mHemato);
-        if (eh1 instanceof HemogramaEx h) {
+         Medico mHemato = medicos.get(0);
+         Medico mRadio  = medicos.get(1);
+         Medico mUltra  = medicos.get(3);
+         
+         // Hemograma p1
+         ExameClinico eh1 = fabHemograma.criar(p1, mHemato);
+         if (eh1 instanceof HemogramaEx h) {
             h.setHemoglobina(13.9);
             h.setHematocrito(41.0);
             h.setLeucocitos(7200);
@@ -66,9 +67,11 @@ public class Main {
         double valorFinal1 = gestor.calcularPreco(eh1.getPrecoBase());
         eh1.setPrecoFinal(valorFinal1);
         fila.adicionar(eh1, Prioridade.ROTINA);
+        
         System.out.printf("Exame %s solicitado para %s — Preço final R$ %.2f — Prioridade %s%n",
                 eh1.getTipo(), p1.getNomeCompleto(), valorFinal1, Prioridade.ROTINA);
 
+                
         // Ressonância p2
         ExameClinico er1 = fabResson.criar(p2, mRadio);
         if (er1 instanceof RessonanciaEx r) {
@@ -244,6 +247,7 @@ public class Main {
 
 
         System.out.println("\n=== Fim da execução de demonstração ===");
+        
     }
 
     private static PoliticaDesconto selecionarPolitica(Paciente p) {

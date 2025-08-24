@@ -18,6 +18,7 @@ public abstract class ExameClinico {
         this.paciente = paciente;
         this.solicitante = solicitante;
         this.precoBase = precoBase;
+        System.out.println("ExameClinico: " + this.numeroExame);
     }
 
 
