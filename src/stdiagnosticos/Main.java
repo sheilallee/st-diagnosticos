@@ -9,6 +9,10 @@ import stdiagnosticos.laudo.*;
 import stdiagnosticos.modelo.*;
 import stdiagnosticos.notificacao.*;
 import stdiagnosticos.preco.*;
+import stdiagnosticos.servico.AnalisadorDeResultados;
+import stdiagnosticos.servico.BancoDeDoencasReal;
+import stdiagnosticos.servico.ProxyBancoDeDoencas;
+import stdiagnosticos.servico.ServicoDeDoencas;
 import stdiagnosticos.validacao.*;
 
 public class Main {
@@ -208,6 +212,36 @@ public class Main {
                     idosoConvenio.getNomeCompleto(), idosoConvenio.getIdade(), idosoConvenio.isPossuiConvenio(),
                     ex.getPrecoBase(), preco);
         }
+
+
+        // --- Testando a Lógica de Diagnóstico com o Padrão Proxy ---
+        System.out.println("\n--- Iniciando Análise de Diagnósticos com Proxy ---");
+
+        // 1. Instanciamos o analisador e o serviço (proxy)
+        ServicoDeDoencas servicoDoencas = new ProxyBancoDeDoencas(new BancoDeDoencasReal());
+        AnalisadorDeResultados analisador = new AnalisadorDeResultados(servicoDoencas);
+
+        // 2. Criamos uma lista com os exames do paciente
+        java.util.List<ExameClinico> examesDoPaciente = java.util.List.of(eh1, er1, eu1);
+
+        // 3. Iteramos sobre os exames para análise
+        for (ExameClinico exame : examesDoPaciente) {
+            System.out.println("\nAnalisando resultado do exame de: " + exame.getTipo());
+
+            // Analisador já retorna os detalhes consultando o Proxy
+            String detalhes = analisador.analisar(exame);
+
+            System.out.println(detalhes);
+        }
+
+
+        // Para demonstrar o cache, vamos analisar o mesmo hemograma de novo
+        System.out.println("\n--- Re-analisando Hemograma para testar o cache ---");
+        String doencaRepetida = analisador.analisar(eh1);
+        System.out.println("Buscando detalhes para " + doencaRepetida + "' novamente...");
+        String detalhesRepetidos = servicoDoencas.getDetalhes(doencaRepetida); // Esta chamada será instantânea
+        System.out.println(detalhesRepetidos);
+
 
         System.out.println("\n=== Fim da execução de demonstração ===");
     }
