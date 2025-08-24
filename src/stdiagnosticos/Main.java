@@ -113,14 +113,17 @@ public class Main {
                 continue;
             }
 
-            // Bridge
-            FormatoLaudo formato = switch (ex.getTipo()) {
-                case "HEMOGRAMA" -> new FormatoPDF();
-                case "RESSONANCIA" -> new FormatoHTML();
-                default -> new FormatoTexto();
-            };
+                        // Bridge
+            FormatoLaudo formato = new FormatoHTML();
             String laudo = formato.gerar(ex);
-            System.out.println(laudo);
+
+            // Salva o laudo em arquivo HTML
+            String nomeArquivo = String.format("laudo_%d.html", ex.getNumeroExame());
+            Path caminhoLaudo = Paths.get("laudos").resolve(nomeArquivo);
+            Files.createDirectories(caminhoLaudo.getParent());
+            Files.writeString(caminhoLaudo, laudo);
+            System.out.println("Laudo HTML salvo em: " + caminhoLaudo.toAbsolutePath());
+
 
             // Observer
             notif.notificarTodos("Laudo emitido para " + ex.getPaciente().getNomeCompleto(), ex.getPaciente());
