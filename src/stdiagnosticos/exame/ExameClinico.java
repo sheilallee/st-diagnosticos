@@ -14,10 +14,10 @@ public abstract class ExameClinico {
 
 
     protected ExameClinico(Paciente paciente, Medico solicitante, double precoBase) {
-    this.numeroExame = GeradorSequencial.getInstancia().proximoNumero();
-    this.paciente = paciente;
-    this.solicitante = solicitante;
-    this.precoBase = precoBase;
+        this.numeroExame = GeradorSequencial.getInstancia().proximoNumero();
+        this.paciente = paciente;
+        this.solicitante = solicitante;
+        this.precoBase = precoBase;
     }
 
 

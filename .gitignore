@@ -1,0 +1,10 @@
+# Arquivos compilados
+*.class
+
+# Pastas de build
+/bin/
+/out/
+
+# Outros (opcional)
+*.log
+*.tmp

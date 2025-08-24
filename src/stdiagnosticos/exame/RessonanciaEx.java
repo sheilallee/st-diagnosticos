@@ -2,6 +2,7 @@ package stdiagnosticos.exame;
 
 
 import stdiagnosticos.modelo.*;
+import stdiagnosticos.servico.BancoDeDoencasReal;
 
 
 public class RessonanciaEx extends ExameClinico {
@@ -10,10 +11,10 @@ public class RessonanciaEx extends ExameClinico {
     private boolean possuiImplanteMetalico;
 
 
+
     public RessonanciaEx(Paciente p, Medico m, double precoBase) {
         super(p, m, precoBase);
     }
-
 
     @Override public String getTipo() { return "RESSONANCIA"; }
 
@@ -28,4 +29,8 @@ public class RessonanciaEx extends ExameClinico {
 
     public boolean isPossuiImplanteMetalico() { return possuiImplanteMetalico; }
     public void setPossuiImplanteMetalico(boolean possuiImplanteMetalico) { this.possuiImplanteMetalico = possuiImplanteMetalico; }
+
+    public String getLaudo() {
+        return "Fratura Óssea";
+    }
 }
